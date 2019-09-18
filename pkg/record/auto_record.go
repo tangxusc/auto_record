@@ -25,7 +25,7 @@ func Start(ctx context.Context) {
 }
 
 func interval(c *cron.Cron) {
-	_, _ = c.AddFunc("*/5 * * * * *", func() {
+	_, _ = c.AddFunc("1 */2 * * * *", func() {
 		fmt.Println("now:", time.Now().Format(`2006-01-02 15:04:05`))
 	})
 }
@@ -35,16 +35,17 @@ func Stop(ctx context.Context) {
 }
 
 func morning(c *cron.Cron) {
-	id, e := c.AddFunc("0 51 8 * * *", func() {
-		logrus.Debugf(`[record]trigger morning ...`)
-		insert()
+	id, e := c.AddFunc("0 31 8 * * *", func() {
+		t := getTime()
+		logrus.Infof(`[record]trigger morning at [%s] ...`, t)
+		insert(t)
 	})
 	logrus.Debugf("[record]morning register:%v,error:%v", id, e)
 }
 
-func insert() {
+func insert(t string) {
 	e := db.Exec(`INSERT INTO HR_AttendMachineData_Middle(Id,AttendMachineNo,EmployeeId,AttendTime,Status,ErrorMessage)
-VALUES(?,?,?,convert(datetime,?, 20),?,?)`, getUuid(), AttendMachineNo, config.Instance.Record.EmployeeId, getTime(), `0`, ``)
+VALUES(?,?,?,convert(datetime,?, 20),?,?)`, getUuid(), AttendMachineNo, config.Instance.Record.EmployeeId, t, `0`, ``)
 	if e != nil {
 		logrus.Warningf(`[record]morning insert error:%v`, e)
 	}
@@ -68,8 +69,9 @@ func getUuid() string {
 
 func night(c *cron.Cron) {
 	id, e := c.AddFunc("0 7 18 * * *", func() {
-		logrus.Debugf(`[record]trigger night ...`)
-		insert()
+		t := getTime()
+		logrus.Infof(`[record]trigger night at [%s] ...`, t)
+		insert(t)
 	})
 	logrus.Debugf("[record]night register:%v,error:%v", id, e)
 }
