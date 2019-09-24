@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tangxusc/auto_record/pkg/config"
 	"github.com/tangxusc/auto_record/pkg/db"
+	"github.com/tangxusc/auto_record/pkg/notify"
 	"math/rand"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ func morning(c *cron.Cron) {
 		t := getTime()
 		logrus.Infof(`[record]trigger morning at [%s] ...`, t)
 		insert(t)
+		go notify.SendMail(config.Instance.Mail.Address, t)
 	})
 	logrus.Debugf("[record]morning register:%v,error:%v", id, e)
 }
@@ -72,6 +74,7 @@ func night(c *cron.Cron) {
 		t := getTime()
 		logrus.Infof(`[record]trigger night at [%s] ...`, t)
 		insert(t)
+		go notify.SendMail(config.Instance.Mail.Address, t)
 	})
 	logrus.Debugf("[record]night register:%v,error:%v", id, e)
 }

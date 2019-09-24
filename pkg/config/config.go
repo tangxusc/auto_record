@@ -31,22 +31,34 @@ func BindParameter(cmd *cobra.Command) {
 
 	cmd.PersistentFlags().StringVarP(&Instance.Record.EmployeeId, "r-employeeId", "", "000530", "工号")
 
+	cmd.PersistentFlags().StringVarP(&Instance.Mail.Address, "m-addr", "", "562050688@qq.com", "邮箱地址")
+	cmd.PersistentFlags().StringVarP(&Instance.Record.EmployeeId, "m-pwd", "", "", "邮箱密码")
+
 }
 
 type RecordConfig struct {
 	EmployeeId string
 }
 
+type MailConfig struct {
+	//发送人账号密码
+	Address string
+	//接收人
+	Password string
+}
+
 type Config struct {
 	Debug  bool
 	Db     *DbConfig
 	Record *RecordConfig
+	Mail   *MailConfig
 }
 
 var Instance = &Config{
 	Debug:  true,
 	Db:     &DbConfig{},
 	Record: &RecordConfig{},
+	Mail:   &MailConfig{},
 }
 
 type DbConfig struct {
