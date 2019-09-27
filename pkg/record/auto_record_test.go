@@ -22,7 +22,7 @@ func TestGetUuid(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	config.Instance.Record.EmployeeId = `000530`
+	config.Instance.Record.EmployeeId = `0`
 	config.Instance.Db = &config.DbConfig{
 		Address:  "10.130.0.210",
 		Port:     "1433",
@@ -35,7 +35,7 @@ func TestInsert(t *testing.T) {
 	}
 
 	db.Conn(context.TODO())
-	insert()
+	insert(getTime(), 0)
 	db.Disconnection(context.TODO())
 }
 

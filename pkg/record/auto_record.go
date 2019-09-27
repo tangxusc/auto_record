@@ -39,21 +39,24 @@ func morning(c *cron.Cron) {
 	id, e := c.AddFunc("0 31 8 * * *", func() {
 		t := getTime()
 		logrus.Infof(`[record]trigger morning at [%s] ...`, t)
-		insert(t, 0)
-		go notify.SendMail(config.Instance.Mail.Address, t)
+		e := insert(t, 0)
+		go notify.SendMail(config.Instance.Mail.Address, t, fmt.Sprintf(`%v`, e))
 	})
 	logrus.Debugf("[record]morning register:%v,error:%v", id, e)
 }
 
-func insert(t string, count int) {
+func insert(t string, count int) error {
 	e := db.Exec(`INSERT INTO HR_AttendMachineData_Middle(Id,AttendMachineNo,EmployeeId,AttendTime,Status,ErrorMessage)
 VALUES(?,?,?,convert(datetime,?, 20),?,?)`, getUuid(), AttendMachineNo, config.Instance.Record.EmployeeId, t, `0`, ``)
 	if e != nil {
 		logrus.Warningf(`[record]morning insert error:%v`, e)
 		if count < 10 {
-			insert(t, count+1)
+			return insert(t, count+1)
+		} else {
+			return e
 		}
 	}
+	return nil
 }
 
 //当前时间+随机值
@@ -76,8 +79,8 @@ func night(c *cron.Cron) {
 	id, e := c.AddFunc("0 7 18 * * *", func() {
 		t := getTime()
 		logrus.Infof(`[record]trigger night at [%s] ...`, t)
-		insert(t, 0)
-		go notify.SendMail(config.Instance.Mail.Address, t)
+		e := insert(t, 0)
+		go notify.SendMail(config.Instance.Mail.Address, t, fmt.Sprintf(`%v`, e))
 	})
 	logrus.Debugf("[record]night register:%v,error:%v", id, e)
 }
