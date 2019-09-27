@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -12,6 +13,8 @@ func InitLog() {
 		logrus.SetLevel(logrus.DebugLevel)
 		logrus.SetReportCaller(true)
 		logrus.Debug("[config]已开启debug模式...")
+		bytes, _ := json.Marshal(Instance)
+		logrus.Debug("config dump:", string(bytes))
 	} else {
 		logrus.SetLevel(logrus.WarnLevel)
 	}
@@ -29,10 +32,10 @@ func BindParameter(cmd *cobra.Command) {
 	cmd.PersistentFlags().IntVarP(&Instance.Db.MaxOpen, "db-MaxOpen", "", 5, "db数据库最大连接数")
 	cmd.PersistentFlags().IntVarP(&Instance.Db.MaxIdle, "db-MaxIdle", "", 5, "db数据库最大等待数量")
 
-	cmd.PersistentFlags().StringVarP(&Instance.Record.EmployeeId, "r-employeeId", "", "000530", "工号")
+	cmd.PersistentFlags().StringVarP(&Instance.Record.EmployeeId, "r-employeeId", "", "", "工号")
 
-	cmd.PersistentFlags().StringVarP(&Instance.Mail.Address, "m-addr", "", "562050688@qq.com", "邮箱地址")
-	cmd.PersistentFlags().StringVarP(&Instance.Record.EmployeeId, "m-pwd", "", "", "邮箱密码")
+	cmd.PersistentFlags().StringVarP(&Instance.Mail.Address, "m-addr", "", "", "qq邮箱地址")
+	cmd.PersistentFlags().StringVarP(&Instance.Mail.Password, "m-pwd", "", "", "qq邮箱密码")
 
 }
 
