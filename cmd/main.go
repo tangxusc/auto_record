@@ -3,15 +3,54 @@ package main
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/tangxusc/auto_record/pkg/cmd"
+	"github.com/spf13/cobra"
+	"github.com/tangxusc/auto_record/pkg/config"
+	"github.com/tangxusc/auto_record/pkg/db"
+	"github.com/tangxusc/auto_record/pkg/record"
+	"math/rand"
+	"os"
+	"os/signal"
+	"time"
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	newCommand := cmd.NewCommand(ctx)
-	cmd.HandlerNotify(cancel)
+	newCommand := NewCommand(ctx)
+	HandlerNotify(cancel)
 
 	if err := newCommand.Execute(); err != nil {
 		logrus.Errorf("[main]发生了错误,错误:%v", err.Error())
 	}
+}
+
+func NewCommand(ctx context.Context) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "start",
+		Short: "start application",
+		Run: func(cmd *cobra.Command, args []string) {
+			rand.Seed(time.Now().Unix())
+			config.InitLog()
+
+			db.Conn(ctx)
+			defer db.Disconnection(ctx)
+
+			record.Start(ctx)
+			defer record.Stop(ctx)
+
+			<-ctx.Done()
+		},
+	}
+	logrus.SetFormatter(&logrus.TextFormatter{})
+	config.BindParameter(command)
+
+	return command
+}
+
+func HandlerNotify(cancel context.CancelFunc) {
+	go func() {
+		signals := make(chan os.Signal, 1)
+		signal.Notify(signals, os.Interrupt, os.Kill)
+		<-signals
+		cancel()
+	}()
 }
